@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Category;
 
-use function Pest\Laravel\{getJson, postJson};
+use function Pest\Laravel\{deleteJson, getJson, postJson, putJson};
 
 it('can list categories', function () {
     $this->withoutExceptionHandling();
@@ -63,8 +63,42 @@ it('can create category', function () {
             ],
         ]);
 
-    expect($response->json('data.name'))->toBe($category->name);
-    expect(Category::count())->toBe(1);
-    expect(Category::query()->where('name', $category->name)->exists())->toBeTrue();
+    expect($response->json('data.name'))->toBe($category->name)
+        ->and(Category::count())->toBe(1)
+        ->and(Category::query()->where('name', $category->name)->exists())
+        ->toBeTrue();
+});
+
+it('can update category', function () {
+    $this->withoutExceptionHandling();
+
+    $category = Category::factory()->create();
+
+    $response = putJson(route('api.v1.categories.update', $category), [
+        'name' => 'New name',
+    ])->assertOk()
+        ->assertJsonStructure([
+            'data' => [
+                'id',
+                'name',
+                'slug',
+            ],
+        ]);
+
+    expect($response->json('data.name'))->toBe('New name')
+        ->and(Category::count())->toBe(1)
+        ->and(Category::query()->where('name', 'New name')->exists())
+        ->toBeTrue();
+});
+
+it('can delete category', function () {
+    $this->withoutExceptionHandling();
+
+    $category = Category::factory()->create();
+
+    deleteJson(route('api.v1.categories.destroy', $category))
+        ->assertNoContent();
+
+    expect(Category::count())->toBe(0);
 });
 
