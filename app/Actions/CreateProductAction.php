@@ -19,7 +19,7 @@ class CreateProductAction
     {
         return Product::query()
             ->create([
-                'sku' => Str::padLeft($this->determineProductSkuAction->execute($productData), 6, '0'),
+                'sku' => $this->determineProductSkuAction->execute($productData),
                 'name' => $productData->name,
                 'price' => $productData->price,
                 'category_id' => $productData->category_id,
